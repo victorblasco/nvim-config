@@ -74,6 +74,7 @@ return packer.startup(function(use)
   }
   use 'JoosepAlviste/nvim-ts-context-commentstring'
   use 'tpope/vim-commentary'
+  use 'RRethy/nvim-treesitter-endwise'
 
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
