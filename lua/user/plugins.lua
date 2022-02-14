@@ -76,6 +76,9 @@ return packer.startup(function(use)
   use 'tpope/vim-commentary'
   use 'RRethy/nvim-treesitter-endwise'
 
+  -- ALE
+  use 'dense-analysis/ale'
+
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
   if PACKER_BOOTSTRAP then
