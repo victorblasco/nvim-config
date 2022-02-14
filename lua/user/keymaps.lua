@@ -34,8 +34,8 @@ keymap("n", "<C-Down>", ":resize -2<CR>", opts)
 keymap("n", "<C-Left>", ":vertical resize -2<CR>", opts)
 keymap("n", "<C-Right>", ":vertical resize +2<CR>", opts)
 -- Navigate buffers
-keymap("n", "<S-l>", ":bnext<CR>", opts)
-keymap("n", "<S-h>", ":bprevious<CR>", opts)
+-- keymap("n", "<S-l>", ":bnext<CR>", opts)
+-- keymap("n", "<S-h>", ":bprevious<CR>", opts)
 -- Search
 keymap("n", "<Space>", "/", opts)
 keymap("n", "<leader><Space>", ":noh<CR>", opts)
@@ -48,10 +48,14 @@ keymap("n", "<leader>e", ":wa!<CR>", opts)
 keymap("n", "<tab>", ":bp<CR>", opts)
 keymap("n", "<S-tab>", ":bn<CR>", opts)
 keymap("n", "<leader>d", ":bd<CR>", opts)
--- Splits
+-- Splits & tabs
 keymap("n", "<leader>v", ":vert new %<CR>", opts)
 keymap("n", "<leader>x", ":new %<CR>", opts)
--- keymap("n", "<leader>d", ":hide<CR>", opts)
+keymap("n", "<leader>d", ":close<CR>", opts)
+keymap("n", "<S-l>", ":tabnext<CR>", opts)
+keymap("n", "<S-h>", ":tabprevious<CR>", opts)
+keymap("n", "<leader>f", ":tabe %<CR>", opts)
+keymap("n", "<leader>D", ":%bd|e#|bd#<CR>", opts)
 
 -- Insert --
 -- Press jk fast to enter
