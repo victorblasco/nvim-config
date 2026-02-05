@@ -1,222 +1,273 @@
-local fn = vim.fn
-
--- Automatically install packer
-local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
-if fn.empty(fn.glob(install_path)) > 0 then
-    PACKER_BOOTSTRAP = fn.system({
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+    vim.fn.system({
         "git",
         "clone",
-        "--depth",
-        "1",
-        "https://github.com/wbthomason/packer.nvim",
-        install_path,
+        "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable",
+        lazypath,
     })
-    vim.notify("Installing packer close and reopen Neovim...")
-    vim.cmd([[packadd packer.nvim]])
 end
+vim.opt.rtp:prepend(lazypath)
 
--- Autocommand that reloads neovim whenever you save the plugins.lua file
-vim.cmd([[
-augroup packer_user_config
-autocmd!
-autocmd BufWritePost plugins.lua source <afile> | PackerSync
-augroup end
-]])
+-- Set leader key before loading plugins
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
 
--- Use a protected call so we don't error out on first use
-local status_ok, packer = pcall(require, "packer")
-if not status_ok then
-    return
-end
-
--- Have packer use a popup window
-packer.init({
-    display = {
-        open_fn = function()
-            return require("packer.util").float({ border = "rounded" })
-        end,
-    },
-})
-
-return require("packer").startup(function(use)
-    use({ "wbthomason/packer.nvim" })
-
-    -- Need to load first
-    use({ "lewis6991/impatient.nvim" })
-    use({ "nathom/filetype.nvim" })
-    use({ "nvim-lua/plenary.nvim" })
-    use({ "nvim-lua/popup.nvim" })
-    use({ "kyazdani42/nvim-web-devicons" })
+require("lazy").setup({
+    -- Core dependencies
+    { "nvim-lua/plenary.nvim", lazy = true },
+    { "nvim-lua/popup.nvim", lazy = true },
+    { "kyazdani42/nvim-web-devicons", lazy = true },
 
     -- Color
-    use({
+    {
         "catppuccin/nvim",
-        as = "catppuccin",
+        name = "catppuccin",
+        priority = 1000,
         config = function()
-            require("plugins/catppuccin")
+            require("plugins.catppuccin")
         end,
-    })
+    },
 
     -- LSP
-    use({ "williamboman/mason.nvim" }) -- An LSP installer
-    use({ "williamboman/mason-lspconfig.nvim" }) -- Bridge between lspconfig and mason
-    use({
-        "neovim/nvim-lspconfig", -- A collection of common configurations for Neovim's built-in language server client.
+    { "williamboman/mason.nvim", lazy = true },
+    { "williamboman/mason-lspconfig.nvim", lazy = true },
+    {
+        "neovim/nvim-lspconfig",
+        event = { "BufReadPre", "BufNewFile" },
+        dependencies = {
+            "williamboman/mason.nvim",
+            "williamboman/mason-lspconfig.nvim",
+        },
         config = function()
-            require("plugins/mason")
+            require("plugins.mason")
             require("lsp")
-        end
-    })
+        end,
+    },
 
     -- Illuminate
-    use({
+    {
         "RRethy/vim-illuminate",
+        event = { "BufReadPost", "BufNewFile" },
         config = function()
-            require("plugins/vim-illuminate")
+            require("plugins.vim-illuminate")
         end,
-    }) -- Illuminates current word in the document
+    },
 
     -- Fuzzy finder
-    use({ "junegunn/fzf", run = "./install --all" })
-    use({
+    {
+        "junegunn/fzf",
+        build = "./install --all",
+        lazy = true,
+    },
+    {
         "ibhagwan/fzf-lua",
-        requires = { "kyazdani42/nvim-web-devicons" },
+        dependencies = { "kyazdani42/nvim-web-devicons" },
+        cmd = "FzfLua",
+        keys = {
+            { "<leader><space>", "<cmd>FzfLua files<cr>", desc = "Fuzzy search" },
+            { "<leader>r", "<cmd>FzfLua resume<cr>", desc = "Resume search" },
+        },
         config = function()
-            require("plugins/fzf")
+            require("plugins.fzf")
         end,
-    })
+    },
 
     -- Autocomplete
-    use({
+    {
         "hrsh7th/nvim-cmp",
+        event = "InsertEnter",
+        dependencies = {
+            "hrsh7th/cmp-path",
+            "hrsh7th/cmp-nvim-lsp",
+            "hrsh7th/cmp-buffer",
+            "onsails/lspkind-nvim",
+            "L3MON4D3/LuaSnip",
+        },
         config = function()
-            require("plugins/nvim-cmp")
+            require("plugins.nvim-cmp")
         end,
-    })
-    use({ "hrsh7th/cmp-path" })
-    use({ "hrsh7th/cmp-nvim-lsp" })
-    use({ "hrsh7th/cmp-buffer" })
-    use({ "onsails/lspkind-nvim" })
-    use({ "L3MON4D3/LuaSnip" }) -- Luasnip: Only for expansion of nvim-cmp
+    },
+    { "hrsh7th/cmp-path", lazy = true },
+    { "hrsh7th/cmp-nvim-lsp", lazy = true },
+    { "hrsh7th/cmp-buffer", lazy = true },
+    { "onsails/lspkind-nvim", lazy = true },
+    { "L3MON4D3/LuaSnip", lazy = true },
 
     -- Treesitter
-    use({
+    {
         "nvim-treesitter/nvim-treesitter",
-        run = ":TSUpdate",
+        build = ":TSUpdate",
+        event = { "BufReadPost", "BufNewFile" },
+        dependencies = {
+            "nvim-treesitter/nvim-treesitter-textobjects",
+        },
         config = function()
-            require("plugins/nvim-treesitter")
+            require("plugins.nvim-treesitter")
         end,
-    })
-    use({ "nvim-treesitter/nvim-treesitter-textobjects" })
+    },
+    { "nvim-treesitter/nvim-treesitter-textobjects", lazy = true },
 
     -- Gitsigns
-    use({
+    {
         "lewis6991/gitsigns.nvim",
+        event = { "BufReadPre", "BufNewFile" },
         config = function()
-            require("plugins/gitsigns")
+            require("plugins.gitsigns")
         end,
-    })
+    },
 
     -- Whichkey
-    use({
+    {
         "folke/which-key.nvim",
+        event = "VeryLazy",
         config = function()
-            require("plugins/which-key")
+            require("plugins.which-key")
         end,
-    })
+    },
 
     -- Comments
-    use({
+    {
         "numToStr/Comment.nvim",
+        event = { "BufReadPost", "BufNewFile" },
         config = function()
             require("Comment").setup()
         end,
-    })
+    },
 
     -- Show indent lines
-    use({
+    {
         "lukas-reineke/indent-blankline.nvim",
+        main = "ibl",
+        event = { "BufReadPost", "BufNewFile" },
         config = function()
-            require("plugins/indent-blankline")
+            require("plugins.indent-blankline")
         end,
-    })
+    },
 
     -- Better quickfix
-    use({
+    {
         "kevinhwang91/nvim-bqf",
         ft = "qf",
-    })
+    },
 
-    -- LSP addons
-    use({ "jose-elias-alvarez/nvim-lsp-ts-utils" })
-    use({ "jose-elias-alvarez/null-ls.nvim" })
+    -- LSP addons (none-ls replaces null-ls)
+    {
+        "nvimtools/none-ls.nvim",
+        event = { "BufReadPre", "BufNewFile" },
+        dependencies = { "nvim-lua/plenary.nvim" },
+    },
 
     -- Explorer
-    use({
+    {
         "kyazdani42/nvim-tree.lua",
-        requires = {
-            "kyazdani42/nvim-web-devicons", -- optional, for file icon
+        dependencies = { "kyazdani42/nvim-web-devicons" },
+        cmd = { "NvimTreeToggle", "NvimTreeFindFile" },
+        keys = {
+            { "<leader>n", "<cmd>NvimTreeToggle<cr>", desc = "NvimTree" },
+            { "<leader>f", "<cmd>NvimTreeFindFile<cr>", desc = "Find File" },
         },
         config = function()
-            require("plugins/nvim-tree")
+            require("plugins.nvim-tree")
         end,
-    })
+    },
 
     -- Colorize hex values
-    use("ap/vim-css-color")
+    {
+        "ap/vim-css-color",
+        event = { "BufReadPost", "BufNewFile" },
+    },
 
     -- Modify faster (){}[] contents
-    use("wellle/targets.vim")
+    {
+        "wellle/targets.vim",
+        event = { "BufReadPost", "BufNewFile" },
+    },
 
     -- Find and replace
-    use("nvim-pack/nvim-spectre")
+    {
+        "nvim-pack/nvim-spectre",
+        cmd = "Spectre",
+        dependencies = { "nvim-lua/plenary.nvim" },
+    },
 
     -- Status Line
-    use({
+    {
         "hoob3rt/lualine.nvim",
+        event = "VeryLazy",
         config = function()
-            require("plugins/lualine")
+            require("plugins.lualine")
         end,
-    })
+    },
 
     -- Copilot
-    use({
+    {
         "github/copilot.vim",
+        event = "InsertEnter",
         config = function()
-            require("plugins/copilot")
+            require("plugins.copilot")
         end,
-    })
+    },
 
     -- Git
-    use("tpope/vim-fugitive")
+    {
+        "tpope/vim-fugitive",
+        cmd = { "Git", "G", "Gblame", "Gdiff", "Glog" },
+    },
 
     -- Add gS and gJ keymaps for smart split/join operations
-    -- TODO: Port to Lua
-    use("AndrewRadev/splitjoin.vim")
+    {
+        "AndrewRadev/splitjoin.vim",
+        keys = { "gS", "gJ" },
+    },
 
     -- Others
-    use("tommcdo/vim-exchange")
-    use({
+    {
+        "tommcdo/vim-exchange",
+        keys = { "cx", "cxx", "X" },
+    },
+    {
         "kylechui/nvim-surround",
+        event = { "BufReadPost", "BufNewFile" },
         config = function()
             require("nvim-surround").setup()
         end,
-    }) -- TODO: Use more
-    use("tpope/vim-repeat")
-    use({
+    },
+    {
+        "tpope/vim-repeat",
+        event = { "BufReadPost", "BufNewFile" },
+    },
+    {
         "christoomey/vim-tmux-navigator",
+        event = "VeryLazy",
         config = function()
-            require("plugins/tmux-navigator")
+            require("plugins.tmux-navigator")
         end,
-    })
-    use({
-      "mg979/vim-visual-multi",
-      branch = 'master'
-    })
-
-    -- Automatically set up your configuration after cloning packer.nvim
-    -- Put this at the end after all plugins
-    if PACKER_BOOTSTRAP then
-        require("packer").sync()
-    end
-end)
+    },
+    {
+        "mg979/vim-visual-multi",
+        branch = "master",
+        event = { "BufReadPost", "BufNewFile" },
+    },
+}, {
+    ui = {
+        border = "rounded",
+    },
+    performance = {
+        rtp = {
+            disabled_plugins = {
+                "gzip",
+                "matchit",
+                "matchparen",
+                "netrwPlugin",
+                "tarPlugin",
+                "tohtml",
+                "tutor",
+                "zipPlugin",
+            },
+        },
+    },
+})
