@@ -5,7 +5,7 @@ local ts_utils = require("nvim-lsp-ts-utils")
 local M = {}
 
 M.setup = function(on_attach, capabilities)
-  lspconfig.tsserver.setup({
+  lspconfig.ts_ls.setup({
     root_dir = lspconfig.util.root_pattern("package.json"),
     init_options = ts_utils.init_options,
     on_attach = function(client, bufnr)
