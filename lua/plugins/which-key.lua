@@ -1,95 +1,73 @@
-local keymap = vim.keymap.set
-require("which-key").setup({
+local wk = require("which-key")
+
+wk.setup({
     plugins = {
-        marks = true, -- shows a list of your marks on ' and `
-        registers = true, -- shows your registers on " in NORMAL or <C-r> in INSERT mode
-        -- the presets plugin, adds help for a bunch of default keybindings in Neovim
-        -- No actual key bindings are created
+        marks = true,
+        registers = true,
         presets = {
-            operators = false, -- adds help for operators like d, y, ...
-            motions = false, -- adds help for motions
-            text_objects = false, -- help for text objects triggered after entering an operator
-            windows = true, -- default bindings on <c-w>
-            nav = true, -- misc bindings to work with windows
-            z = true, -- bindings for folds, spelling and others prefixed with z
-            g = true, -- bindings for prefixed with g
+            operators = false,
+            motions = false,
+            text_objects = false,
+            windows = true,
+            nav = true,
+            z = true,
+            g = true,
         },
     },
     icons = {
-        breadcrumb = "»", -- symbol used in the command line area that shows your active key combo
-        separator = "➜", -- symbol used between a key and it's label
-        group = "+", -- symbol prepended to a group
+        breadcrumb = "»",
+        separator = "➜",
+        group = "+",
     },
-    window = {
-        border = "single", -- none, single, double, shadow
-        position = "bottom", -- bottom, top
-        margin = { 0, 0, 0, 0 }, -- extra window margin [top, right, bottom, left]
-        padding = { 0, 0, 0, 0 }, -- extra window padding [top, right, bottom, left]
+    win = {
+        border = "single",
+        padding = { 0, 0 },
     },
     layout = {
-        height = { min = 2, max = 25 }, -- min and max height of the columns
-        width = { min = 10, max = 70 }, -- min and max width of the columns
-        spacing = 3, -- spacing between columns
+        height = { min = 2, max = 25 },
+        width = { min = 10, max = 70 },
+        spacing = 3,
     },
-    hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ " }, -- hide mapping boilerplate
-    show_help = true, -- show help message on the command line when the popup is visible
 })
 
-keymap("n", "<Space>", "<NOP>", { silent = true })
-vim.g.mapleader = " "
-
-local opts = {
-    mode = "n", -- NORMAL mode
-    prefix = "<leader>",
-    buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
-    silent = true, -- use `silent` when creating keymaps
-    noremap = true, -- use `noremap` when creating keymaps
-    nowait = false, -- use `nowait` when creating keymaps
-}
+vim.keymap.set("n", "<Space>", "<NOP>", { silent = true })
 
 -- LSP Hover
-keymap('n', 'K', vim.lsp.buf.hover)
+vim.keymap.set("n", "K", vim.lsp.buf.hover)
 
-local mappings = {
-    n = { ":NvimTreeToggle<CR>", "NerdTree" },
-    f = { ":NvimTreeFindFile<CR>", "Find File" },
-    h = { ":let @/=''<CR>", "No Highlight" },
-    r = { "<cmd>FzfLua resume<cr>", "Resume search" },
+-- Register mappings using the new add() API
+wk.add({
+    { "<leader>n", "<cmd>NvimTreeToggle<CR>", desc = "NerdTree" },
+    { "<leader>f", "<cmd>NvimTreeFindFile<CR>", desc = "Find File" },
+    { "<leader>h", ":let @/=''<CR>", desc = "No Highlight" },
+    { "<leader>r", "<cmd>FzfLua resume<cr>", desc = "Resume search" },
+    { "<leader><space>", "<cmd>FzfLua files<cr>", desc = "Fuzzy search" },
 
-    ["<space>"] = { "<cmd>FzfLua files<cr>", "Fuzzy search" },
+    -- Git group
+    { "<leader>g", group = "Git" },
+    { "<leader>gb", "<cmd>Git blame<cr>", desc = "Blame" },
+    { "<leader>gs", "<cmd>FzfLua git_status<cr>", desc = "Git status" },
+    { "<leader>gc", "<cmd>FzfLua git_commits<cr>", desc = "Git commits" },
 
-    g = {
-        name = "Git",
-        b = { "<cmd>Git blame<cr>", "Blame" },
-        s = { "<cmd>FzfLua git_status<cr>", "Git status" },
-        c = { "<cmd>FzfLua git_commits<cr>", "Git commits" },
-    },
+    -- LSP group
+    { "<leader>l", group = "LSP" },
+    { "<leader>ld", "<cmd>FzfLua lsp_definitions<CR>", desc = "Definitions" },
+    { "<leader>lr", "<cmd>FzfLua lsp_references<CR>", desc = "References" },
+    { "<leader>lt", "<cmd>FzfLua lsp_typedefs<CR>", desc = "Type defs" },
+    { "<leader>lR", vim.lsp.buf.rename, desc = "Rename" },
+    { "<leader>li", "<cmd>LspInfo<cr>", desc = "Info" },
+    { "<leader>lm", "<cmd>Mason<cr>", desc = "Mason" },
 
-    l = {
-        name = "LSP",
-        d = { "<cmd>FzfLua lsp_definitions<CR>", "Definitions" },
-        r = { "<cmd>FzfLua lsp_references<CR>", "References" },
-        t = { "<cmd>FzfLua lsp_typedefs<CR>", "Type defs" },
-        R = { vim.lsp.buf.rename, "Rename" },
-        i = { "<cmd>LspInfo<cr>", "Info" },
-        m = { "<cmd>Mason<cr>", "Mason" },
-    },
+    -- Search group
+    { "<leader>s", group = "Search" },
+    { "<leader>sb", "<cmd>FzfLua buffers<cr>", desc = "Find buffer" },
+    { "<leader>st", "<cmd>FzfLua live_grep_native<cr>", desc = "Text" },
+    { "<leader>sw", "<cmd>FzfLua grep_cword<cr>", desc = "Current word" },
 
-    s = {
-        name = "Search",
-        b = { "<cmd>FzfLua buffers<cr>", "Find buffer" },
-        t = { "<cmd>FzfLua live_grep_native<cr>", "Text" },
-        w = { "<cmd>FzfLua grep_cword<cr>", "Current word" },
-    },
-
-    d = {
-        name = "Diagnostics",
-        a = { vim.diagnostic.open_float, "Current line" },
-        w = { "<cmd>FzfLua diagnostics_workspace<cr>", "Workspace" },
-        d = { vim.diagnostic.goto_next, "Next Diagnostic" },
-        s = { vim.diagnostic.goto_prev, "Previous Diagnostic" },
-    },
-}
-
-local wk = require("which-key")
-wk.register(mappings, opts)
+    -- Diagnostics group
+    { "<leader>d", group = "Diagnostics" },
+    { "<leader>da", vim.diagnostic.open_float, desc = "Current line" },
+    { "<leader>dw", "<cmd>FzfLua diagnostics_workspace<cr>", desc = "Workspace" },
+    { "<leader>dd", vim.diagnostic.goto_next, desc = "Next Diagnostic" },
+    { "<leader>ds", vim.diagnostic.goto_prev, desc = "Previous Diagnostic" },
+})

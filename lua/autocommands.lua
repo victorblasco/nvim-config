@@ -10,10 +10,6 @@ require("utils").define_augroups({
         { "FileType", "markdown", "setlocal wrap" },
         { "FileType", "markdown", "setlocal spell" },
     },
-    _packer = {
-        -- Auto compile when there are changes in plugins.lua
-        { "BufWritePost", "plugins.lua", "PackerCompile" },
-    },
     _resize = {
         -- Automatically rebalance windows on vim resize (added because tmux)
         { "VimResized", "*", ":wincmd =" },

@@ -1,29 +1,45 @@
-local u = require("utils")
 local lspconfig = require("lspconfig")
-local ts_utils = require("nvim-lsp-ts-utils")
 
 local M = {}
 
 M.setup = function(on_attach, capabilities)
   lspconfig.ts_ls.setup({
     root_dir = lspconfig.util.root_pattern("package.json"),
-    init_options = ts_utils.init_options,
     on_attach = function(client, bufnr)
       on_attach(client, bufnr)
 
-      ts_utils.setup({
-        -- debug = true,
-        auto_inlay_hints = false,
-        import_all_scan_buffers = 100,
-        update_imports_on_move = true,
-        -- filter out dumb module warning
-        filter_out_diagnostics_by_code = { 80001 },
-      })
-      ts_utils.setup_client(client)
+      local opts = { buffer = bufnr, silent = true }
 
-      u.buf_map(bufnr, "n", "gs", ":TSLspOrganize<CR>")
-      u.buf_map(bufnr, "n", "gr", ":TSLspRenameFile<CR>")
-      u.buf_map(bufnr, "n", "gI", ":TSLspImportAll<CR>")
+      -- Use built-in code actions instead of nvim-lsp-ts-utils
+      -- Organize imports
+      vim.keymap.set("n", "gs", function()
+        vim.lsp.buf.code_action({
+          apply = true,
+          filter = function(action)
+            return action.title == "Organize Imports"
+          end,
+        })
+      end, opts)
+
+      -- Rename file (requires LSP support)
+      vim.keymap.set("n", "gr", function()
+        local old_name = vim.api.nvim_buf_get_name(bufnr)
+        vim.ui.input({ prompt = "New filename: ", default = old_name }, function(new_name)
+          if new_name and new_name ~= "" and new_name ~= old_name then
+            vim.lsp.util.rename(old_name, new_name)
+          end
+        end)
+      end, opts)
+
+      -- Add missing imports
+      vim.keymap.set("n", "gI", function()
+        vim.lsp.buf.code_action({
+          apply = true,
+          filter = function(action)
+            return action.title:match("Add missing imports") or action.title:match("Add all missing imports")
+          end,
+        })
+      end, opts)
     end,
     capabilities = capabilities,
   })
