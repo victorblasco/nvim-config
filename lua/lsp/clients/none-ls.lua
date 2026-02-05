@@ -18,9 +18,6 @@ local sources = {
     condition = with_root_file(".semgrep.yml"),
   }),
 
-  b.formatting.trim_whitespace.with({
-    filetypes = { "tmux", "zsh" },
-  }),
   b.formatting.rubocop.with({
     condition = with_root_file(".rubocop.yml"),
     command = "bundle",

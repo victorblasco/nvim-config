@@ -32,11 +32,12 @@ require("lazy").setup({
         end,
     },
 
-    -- LSP
+    -- LSP (pinned to stable version before v3.0.0 deprecations)
     { "williamboman/mason.nvim", lazy = true },
     { "williamboman/mason-lspconfig.nvim", lazy = true },
     {
         "neovim/nvim-lspconfig",
+        tag = "v1.0.0",
         event = { "BufReadPre", "BufNewFile" },
         dependencies = {
             "williamboman/mason.nvim",
@@ -97,19 +98,19 @@ require("lazy").setup({
     { "onsails/lspkind-nvim", lazy = true },
     { "L3MON4D3/LuaSnip", lazy = true },
 
-    -- Treesitter
+    -- Treesitter (pinned to last stable version with old API)
     {
         "nvim-treesitter/nvim-treesitter",
+        tag = "v0.9.2",
         build = ":TSUpdate",
         event = { "BufReadPost", "BufNewFile" },
         dependencies = {
-            "nvim-treesitter/nvim-treesitter-textobjects",
+            { "nvim-treesitter/nvim-treesitter-textobjects", commit = "ad8f0a472148c3e0ae9851e26a722ee4e29b1595" },
         },
         config = function()
             require("plugins.nvim-treesitter")
         end,
     },
-    { "nvim-treesitter/nvim-treesitter-textobjects", lazy = true },
 
     -- Gitsigns
     {

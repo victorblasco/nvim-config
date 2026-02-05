@@ -16,7 +16,7 @@ require("nvim-treesitter.configs").setup({
         "yaml",
     },
     highlight = {
-        enable = true, -- false will disable the whole extension
+        enable = true,
         additional_vim_regex_highlighting = true,
     },
 
